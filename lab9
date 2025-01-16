@@ -1,0 +1,74 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+
+using namespace std;
+
+struct Student {
+    char fio[50];     
+    char group[10];     
+    char recordBook[15];
+    int grades[4];      
+};
+
+
+void inputStudent(Student& student) {
+    cout << "Введите ФИО: ";
+    cin.ignore();
+    cin.getline(student.fio, 50);
+    cout << "Введите группу: ";
+    cin.getline(student.group, 10);
+    cout << "Введите номер зачётной книжки: ";
+    cin.getline(student.recordBook, 15);
+    cout << "Введите 4 оценки за сессию: ";
+    for (int i = 0; i < 4; ++i) {
+        cin >> student.grades[i];
+    }
+    cin.ignore(); 
+}
+
+
+void printStudent(const Student& student) {
+    cout << "ФИО: " << student.fio << endl;
+    cout << "Группа: " << student.group << endl;
+    cout << "Номер зачётной книжки: " << student.recordBook << endl;
+    cout << "Оценки: ";
+    for (int i = 0; i < 4; ++i) {
+        cout << student.grades[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    setlocale(0, "ru");
+    const int numStudents = 2;
+    Student students[numStudents];
+
+    
+    cout << "Введите данные для студентов:" << endl;
+    for (int i = 0; i < numStudents; ++i) {
+        cout << "Студент #" << i + 1 << ":" << endl;
+        inputStudent(students[i]);
+    }
+
+
+    ofstream outFile("students.txt");
+    if (outFile.is_open()) {
+        for (int i = 0; i < numStudents; ++i) {
+            outFile << students[i].fio << endl;
+            outFile << students[i].group << endl;
+            outFile << students[i].recordBook << endl;
+            for (int j = 0; j < 4; ++j) {
+                outFile << students[i].grades[j] << " ";
+            }
+            outFile << endl;
+        }
+        outFile.close();
+        cout << "Данные успешно записаны в файл students.txt" << endl;
+    }
+    else {
+        cerr << "Ошибка при открытии файла для записи!" << endl;
+        return 1;
+    }
+    return 0;
+}
