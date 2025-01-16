@@ -1,0 +1,100 @@
+#include <windows.h>
+#include <string>
+#include <set>
+#include <sstream>
+
+using namespace std;
+
+HWND hwndSet1, hwndSet2, hwndResult, hwndListbox;
+
+set<int> parseSet(const wstring& input) {
+    set<int> resultSet;
+    wstringstream ss(input);
+    int num;
+    while (ss >> num) {
+        resultSet.insert(num);
+    }
+    return resultSet;
+}
+
+wstring setToString(const set<int>& s) {
+    wstringstream ss;
+    for (int num : s) {
+        ss << num << L" ";
+    }
+    return ss.str();
+}
+
+void calculateDifference(HWND hwnd) {
+    wchar_t buffer1[256], buffer2[256];
+    GetWindowText(hwndSet1, buffer1, sizeof(buffer1) / sizeof(wchar_t));
+    GetWindowText(hwndSet2, buffer2, sizeof(buffer2) / sizeof(wchar_t));
+
+    set<int> set1 = parseSet(buffer1);
+    set<int> set2 = parseSet(buffer2);
+
+    set<int> resultSet;
+    for (int num : set1) {
+        if (set2.find(num) == set2.end()) {
+            resultSet.insert(num);
+        }
+    }
+
+    wstring result = setToString(resultSet);
+    SetWindowText(hwndResult, result.c_str());
+
+    wstring operation = L"Разность: " + wstring(buffer1) + L" - " + wstring(buffer2) + L" = " + result;
+    SendMessage(hwndListbox, LB_ADDSTRING, 0, (LPARAM)operation.c_str());
+}
+
+void clearList() {
+    SendMessage(hwndListbox, LB_RESETCONTENT, 0, 0);
+}
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_CREATE:
+        CreateWindow(L"static", L"Множество 1:", WS_VISIBLE | WS_CHILD, 10, 10, 100, 20, hwnd, NULL, NULL, NULL);
+        hwndSet1 = CreateWindow(L"edit", L"", WS_VISIBLE | WS_CHILD | WS_BORDER, 120, 10, 200, 20, hwnd, NULL, NULL, NULL);
+        CreateWindow(L"static", L"Множество 2:", WS_VISIBLE | WS_CHILD, 10, 40, 100, 20, hwnd, NULL, NULL, NULL);
+        hwndSet2 = CreateWindow(L"edit", L"", WS_VISIBLE | WS_CHILD | WS_BORDER, 120, 40, 200, 20, hwnd, NULL, NULL, NULL);
+        CreateWindow(L"button", L"Вычислить", WS_VISIBLE | WS_CHILD, 10, 70, 100, 30, hwnd, (HMENU)1, NULL, NULL);
+        CreateWindow(L"button", L"Очистить список", WS_VISIBLE | WS_CHILD, 120, 70, 200, 30, hwnd, (HMENU)2, NULL, NULL);
+        hwndResult = CreateWindow(L"edit", L"", WS_VISIBLE | WS_CHILD | WS_BORDER, 10, 110, 310, 30, hwnd, NULL, NULL, NULL);
+        hwndListbox = CreateWindow(L"listbox", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 10, 150, 310, 100, hwnd, NULL, NULL, NULL);
+        break;
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case 1: calculateDifference(hwnd); break;
+        case 2: clearList(); break;
+        }
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+    return 0;
+}
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int nCmdShow) {
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = L"SetCalculator";
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(0, L"SetCalculator", L"Калькулятор разности множеств", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, 350, 300, NULL, NULL, hInstance, NULL);
+
+    ShowWindow(hwnd, nCmdShow);
+
+    MSG msg = {};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return 0;
+}
