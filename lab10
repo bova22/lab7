@@ -1,0 +1,106 @@
+#include <windows.h>
+
+// Глобальные переменные
+HINSTANCE hInst;
+HWND hWnd;
+HDC hdc;
+BOOL isDrawing = FALSE;  // Флаг для рисования
+POINT startPoint, endPoint;  // Координаты для начала и конца прямоугольника
+COLORREF borderColor = RGB(0, 0, 255);  // Синий цвет для границ
+COLORREF fillColor = RGB(255, 0, 0);    // Красный цвет для заливки
+
+// Функция рисования прямоугольника
+void DrawRectangle(HDC hdc, POINT startPoint, POINT endPoint) {
+    // Устанавливаем кисть и ручку
+    HBRUSH hBrush = CreateSolidBrush(fillColor);  // Заливка красным
+    HPEN hPen = CreatePen(PS_SOLID, 2, borderColor);  // Синие границы
+    SelectObject(hdc, hBrush);
+    SelectObject(hdc, hPen);
+
+    // Рисуем прямоугольник
+    Rectangle(hdc, startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+
+    // Освобождаем ресурсы
+    DeleteObject(hBrush);
+    DeleteObject(hPen);
+}
+
+// Обработчик сообщений
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+        case WM_LBUTTONDOWN:
+            // Нажатие левой кнопки мыши: сохраняем начальную точку
+            startPoint.x = LOWORD(lParam);
+            startPoint.y = HIWORD(lParam);
+            isDrawing = TRUE;
+            return 0;
+
+        case WM_MOUSEMOVE:
+            if (isDrawing) {
+                // При движении мыши обновляем конечную точку
+                endPoint.x = LOWORD(lParam);
+                endPoint.y = HIWORD(lParam);
+
+                // Перерисовываем окно
+                InvalidateRect(hWnd, NULL, TRUE);
+            }
+            return 0;
+
+        case WM_LBUTTONUP:
+            // Отпускание кнопки мыши: завершаем рисование
+            endPoint.x = LOWORD(lParam);
+            endPoint.y = HIWORD(lParam);
+            isDrawing = FALSE;
+
+            // Перерисовываем окно
+            InvalidateRect(hWnd, NULL, TRUE);
+            return 0;
+
+        case WM_PAINT:
+            {
+                PAINTSTRUCT ps;
+                hdc = BeginPaint(hWnd, &ps);
+
+                // Если идет процесс рисования, рисуем прямоугольник
+                if (isDrawing || (!isDrawing && (startPoint.x != endPoint.x || startPoint.y != endPoint.y))) {
+                    DrawRectangle(hdc, startPoint, endPoint);
+                }
+
+                EndPaint(hWnd, &ps);
+            }
+            return 0;
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+    }
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+// Основная функция
+int main() {
+    // Регистрация класса окна
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = WndProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = L"RectangleDrawingApp";
+    RegisterClass(&wc);
+
+    // Создание окна
+    hWnd = CreateWindowEx(
+        0, L"RectangleDrawingApp", L"Рисование прямоугольников",
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+        NULL, NULL, hInst, NULL);
+
+    ShowWindow(hWnd, SW_SHOW);
+    UpdateWindow(hWnd);
+
+    // Основной цикл сообщений
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return 0;
+}
