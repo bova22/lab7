@@ -6,11 +6,11 @@ int main() {
 
     setlocale(LC_ALL, "ru");
     //Задание 1 
-    /*int n;
+    /*
 
-    cout << "Введите количество элементов в массиве: ";
-    cin >> n;
-    int* array = new int[n];
+
+    int const n=5;
+    int array[n];
 
 
     cout << "Введите " << n << " элементов массива: ";
