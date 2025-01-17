@@ -25,6 +25,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         if (array[i] < 0) {
             summinus += array[i];
+            countminus++;
         }
         else if (array[i] > 0) {
             sumplus += array[i];
