@@ -40,9 +40,9 @@ int main() {
     /*const int rows = 3;
     const int cols = 4;
     string array[rows][cols] = {
-        {"можете", "banana", "Убрать", "date"},
-        {"две", "fox", "Энки", "hippo"},
-        {"практики", "jaguar", "Пожалуйста", "lemon"}
+        {"меня", "banana", "зовут", "date"},
+        {"олег", "fox", "бова", "hippo"},
+        {"мне", "jaguar", "семнадцать", "lemon"}
     };
 
     cout << "Слова, образованные четными элементами каждой строки:\n";
