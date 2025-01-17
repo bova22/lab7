@@ -20,7 +20,7 @@ double S(int n, double x) {
     
     for (int i = 1; i <= n; ++i) {
         term *= (x * cos(PI / 4)) / factorial(i); 
-        sum += term;  // Добавляем к сумме
+        sum += term;  
     }
     return sum;
 }
